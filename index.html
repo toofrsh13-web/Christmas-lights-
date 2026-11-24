@@ -142,4 +142,45 @@ document.querySelectorAll('[data-test]').forEach(button => {
     }
   };
 });
+// CHRISTMAS ALTERNATING EFFECT
+let christmasTimer = null;
+let christmasStep = 0;
+
+function startChristmasAlternating() {
+  if (!testCharacteristic) {
+    alert('Connect to your lights first!');
+    return;
+  }
+
+  stopChristmasEffect();
+
+  christmasStep = 0;
+
+  christmasTimer = setInterval(async () => {
+    const colour = christmasStep % 2 === 0
+      ? [255, 0, 0]
+      : [0, 255, 0];
+
+    const packet = new Uint8Array([
+      0x7e, 0x07, 0x05, 0x03,
+      colour[0], colour[1], colour[2], 0x10, 0xef
+    ]);
+
+    try {
+      await testCharacteristic.writeValueWithoutResponse(packet);
+    } catch (error) {
+      stopChristmasEffect();
+      alert('Light effect stopped: ' + error.message);
+    }
+
+    christmasStep++;
+  }, 1000);
+}
+
+function stopChristmasEffect() {
+  if (christmasTimer) {
+    clearInterval(christmasTimer);
+    christmasTimer = null;
+  }
+}
 </script></body></html>
