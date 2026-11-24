@@ -67,7 +67,7 @@ document.querySelector('#connect').onclick=async()=>{
  if(!navigator.bluetooth){s.textContent='Web Bluetooth unavailable in this browser. Try Chrome on Android, and open the app from an HTTPS site.';return}
  try{
   s.textContent='Scanning… Choose the LEDBLE device in the system dialog.';
-  const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['ffe0','fff0']});
+  const device=await navigator.bluetooth.requestDevice({acceptAllDevices:true,optionalServices:['0000ffe0-0000-1000-8000-00805f9b34fb','0000fff0-0000-1000-8000-00805f9b34fb']});
   s.textContent='Selected: '+(device.name||'Unnamed BLE device')+'\nConnecting…';
   const server=await device.gatt.connect();
   const services=await server.getPrimaryServices();
