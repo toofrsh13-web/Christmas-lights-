@@ -77,4 +77,69 @@ document.querySelector('#connect').onclick=async()=>{
   device.addEventListener('gattserverdisconnected',()=>s.textContent='Disconnected. Tap connect to reconnect.');
  }catch(e){s.textContent='Connection cancelled or failed: '+e.message}
 };
+const testPanel = document.createElement('div');
+testPanel.className = 'panel';
+testPanel.innerHTML = `
+<h3>Test Real Lights</h3>
+<div class="controls">
+<button data-test="red">🔴 Red</button>
+<button data-test="green">🟢 Green</button>
+<button data-test="blue">🔵 Blue</button>
+</div>
+<p class="small" id="testStatus">Connect first, then choose a colour.</p>
+`;
+document.querySelector('#connect').parentElement.before(testPanel);
+
+let testCharacteristic = null;
+
+document.querySelector('#connect').onclick = async () => {
+  const status = document.querySelector('#status');
+  try {
+    status.textContent = 'Connecting...';
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['0000fff0-0000-1000-8000-00805f9b34fb']
+    });
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(
+      '0000fff0-0000-1000-8000-00805f9b34fb'
+    );
+    testCharacteristic = await service.getCharacteristic(
+      '0000fff3-0000-1000-8000-00805f9b34fb'
+    );
+    status.textContent = 'Connected to ' + device.name;
+    document.querySelector('#testStatus').textContent =
+      'Ready! Choose a colour.';
+  } catch (e) {
+    status.textContent = 'Connection failed: ' + e.message;
+  }
+};
+
+document.querySelectorAll('[data-test]').forEach(button => {
+  button.onclick = async () => {
+    const colours = {
+      red: [255, 0, 0],
+      green: [0, 255, 0],
+      blue: [0, 0, 255]
+    };
+    if (!testCharacteristic) {
+      document.querySelector('#testStatus').textContent =
+        'Connect to the lights first.';
+      return;
+    }
+    const rgb = colours[button.dataset.test];
+    const packet = new Uint8Array([
+      0x7e, 0x07, 0x05, 0x03,
+      rgb[0], rgb[1], rgb[2], 0x10, 0xef
+    ]);
+    try {
+      await testCharacteristic.writeValueWithoutResponse(packet);
+      document.querySelector('#testStatus').textContent =
+        button.dataset.test.toUpperCase() + ' command sent!';
+    } catch (e) {
+      document.querySelector('#testStatus').textContent =
+        'Send failed: ' + e.message;
+    }
+  };
+});
 </script></body></html>
