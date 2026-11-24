@@ -183,4 +183,19 @@ function stopChristmasEffect() {
     christmasTimer = null;
   }
 }
+// CHRISTMAS EFFECT CONTROLS
+const effectPanel = document.createElement('div');
+effectPanel.className = 'panel';
+effectPanel.innerHTML = `
+  <h3>🎄 Christmas Effects</h3>
+  <button id="startChristmas">▶ Start Red & Green</button>
+  <button id="stopChristmas">⏹ Stop Effect</button>
+`;
+testPanel.after(effectPanel);
+
+document.getElementById('startChristmas').onclick =
+  startChristmasAlternating;
+
+document.getElementById('stopChristmas').onclick =
+  stopChristmasEffect;
 </script></body></html>
